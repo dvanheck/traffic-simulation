@@ -1,11 +1,8 @@
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
@@ -87,7 +84,7 @@ public class Car extends JLabel implements Updatable {
 	}
 	
 	/**
-	 * Constructor of Car
+	 * Preferred constructor of Car
 	 * 
 	 * @param topSpeed
 	 * @param accel
@@ -117,6 +114,7 @@ public class Car extends JLabel implements Updatable {
 		myAccelWaitTime = 5;
 		myAccelAmount = accel;	
 		myUpdateCounter = 0;
+		
 	}
 	
 	/**
@@ -127,6 +125,26 @@ public class Car extends JLabel implements Updatable {
 	public int getSpeed()
 	{
 		return myCurrentSpeed;
+	}
+	
+	/**
+	 * Sets the top speed of the car
+	 * 
+	 * @param speed
+	 */
+	public void setTopSpeed(int speed)
+	{
+		myTopSpeed = speed;
+	}
+	
+	/**
+	 * Sets the acceleration of the car
+	 * 
+	 * @param accel
+	 */
+	public void setAccel(int accel)
+	{
+		myAccelAmount = accel;
 	}
 	
 	/**
