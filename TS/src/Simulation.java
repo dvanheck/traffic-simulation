@@ -37,30 +37,33 @@ public class Simulation {
 	private JTextField mySpeedTextField; 
 	private JTextField myAccelTextField;
 	
-	final int LAYER_1_INDEX = 0; // top layer for components for mySimPanel
-	final int LAYER_2_INDEX = 1; // the layer behind the top layer of MySimPanel
-	final int LAYER_3_INDEX = 2; // the back layer
+	private final int LAYER_1_INDEX = 0; // top layer for components for mySimPanel
+	private final int LAYER_2_INDEX = 1; // the layer behind the top layer of MySimPanel
+	private final int LAYER_3_INDEX = 2; // the back layer
 	
 	/* Primary sim vars */
-	final int LANE_WIDTH = 14;
-	final int MEDIAN_WIDTH = 28; // width of the median in the middle of the lanes
+	public static final int LANE_WIDTH = 14;
+	private final int MEDIAN_WIDTH = 28; // width of the median in the middle of the lanes
 	// distance from the edges of the screen of the vertical lanes
-	final int VERT_LANE_EDGE_DIST = 286; 
+	private final int VERT_LANE_EDGE_DIST = 286; 
 	// distance from the edges of the screen of the horizontal lanes
-	final int HORIZ_LANE_EDGE_DIST = 150;
-	final int ROAD_WIDTH = 70;
+	private final int HORIZ_LANE_EDGE_DIST = 150;
+	private final int ROAD_WIDTH = 70;
 	
-	final int UPDATE_COUNT_MAX = 479001600;
+	private final int UPDATE_COUNT_MAX = 479001600;
 	private int mySpawnInterval = 15; // amount of updates before cars spawn
 	private int myUpdateCounter;
 	
 	private ArrayList<Car> myCars; // holds the cars in the sim
 	private int mySpeedLimit;
 	private int myAccel;
+	private int myDeccel;
 	private ArrayList<Point> myStartingPoints; // the starting points for the cars
 	private Random myRng; // to randomly generate starting point
 	
-	
+	// intersections
+	private ArrayList<Intersection> myIntersections;
+	private int myLightChangeWaitTime;
 	
 	/**
 	 * Default constructor for the Simulation
@@ -80,22 +83,30 @@ public class Simulation {
 		myStartingPoints = new ArrayList<Point>();
 		mySpeedLimit = 15;
 		myAccel = 1;
+		myDeccel = -10;
+		myLightChangeWaitTime = 50;
+		
+		myIntersections = new ArrayList<Intersection>();
+		myIntersections.add(new Intersection(VERT_LANE_EDGE_DIST, HORIZ_LANE_EDGE_DIST, false)); // top left intersection
+		myIntersections.add(new Intersection(1280 - VERT_LANE_EDGE_DIST - LANE_WIDTH - MEDIAN_WIDTH - LANE_WIDTH, HORIZ_LANE_EDGE_DIST, false)); // top right
+		myIntersections.add(new Intersection(VERT_LANE_EDGE_DIST, 600 - HORIZ_LANE_EDGE_DIST - LANE_WIDTH - MEDIAN_WIDTH - LANE_WIDTH, false)); // bottom left
+		myIntersections.add(new Intersection(1280 - VERT_LANE_EDGE_DIST - LANE_WIDTH - MEDIAN_WIDTH - LANE_WIDTH, 600 - HORIZ_LANE_EDGE_DIST - LANE_WIDTH - MEDIAN_WIDTH - LANE_WIDTH, false)); // bottom right
 		
 		// left coordinates
-		myStartingPoints.add(new Point(0, HORIZ_LANE_EDGE_DIST));
-		myStartingPoints.add(new Point(0, HORIZ_LANE_EDGE_DIST + LANE_WIDTH));
-		myStartingPoints.add(new Point(0, 600 - HORIZ_LANE_EDGE_DIST - LANE_WIDTH - MEDIAN_WIDTH - LANE_WIDTH));
-		myStartingPoints.add(new Point(0, 600 - HORIZ_LANE_EDGE_DIST - LANE_WIDTH - MEDIAN_WIDTH));
+		myStartingPoints.add(new Point(0, HORIZ_LANE_EDGE_DIST + LANE_WIDTH + MEDIAN_WIDTH));
+		myStartingPoints.add(new Point(0, HORIZ_LANE_EDGE_DIST + LANE_WIDTH + MEDIAN_WIDTH + LANE_WIDTH));
+		myStartingPoints.add(new Point(0, 600 - HORIZ_LANE_EDGE_DIST));
+		myStartingPoints.add(new Point(0, 600 - HORIZ_LANE_EDGE_DIST - LANE_WIDTH));
 		// bottom points
 		myStartingPoints.add(new Point(VERT_LANE_EDGE_DIST + LANE_WIDTH + MEDIAN_WIDTH, 600));
 		myStartingPoints.add(new Point(VERT_LANE_EDGE_DIST + LANE_WIDTH + MEDIAN_WIDTH + LANE_WIDTH, 600));
 		myStartingPoints.add(new Point(1280 - VERT_LANE_EDGE_DIST - LANE_WIDTH, 600));
 		myStartingPoints.add(new Point(1280 - VERT_LANE_EDGE_DIST, 600));
 		// right points
-		myStartingPoints.add(new Point(1270, HORIZ_LANE_EDGE_DIST + LANE_WIDTH + MEDIAN_WIDTH + LANE_WIDTH));
-		myStartingPoints.add(new Point(1270, HORIZ_LANE_EDGE_DIST + LANE_WIDTH + MEDIAN_WIDTH));
-		myStartingPoints.add(new Point(1270, 600 - HORIZ_LANE_EDGE_DIST));
-		myStartingPoints.add(new Point(1270, 600 - HORIZ_LANE_EDGE_DIST - LANE_WIDTH));
+		myStartingPoints.add(new Point(1270, HORIZ_LANE_EDGE_DIST + LANE_WIDTH));
+		myStartingPoints.add(new Point(1270, HORIZ_LANE_EDGE_DIST));
+		myStartingPoints.add(new Point(1270, 600 - HORIZ_LANE_EDGE_DIST - LANE_WIDTH - MEDIAN_WIDTH - LANE_WIDTH));
+		myStartingPoints.add(new Point(1270, 600 - HORIZ_LANE_EDGE_DIST - LANE_WIDTH - MEDIAN_WIDTH));
 		// top points 
 		myStartingPoints.add(new Point(VERT_LANE_EDGE_DIST, 0));
 		myStartingPoints.add(new Point(VERT_LANE_EDGE_DIST + LANE_WIDTH, 0));
@@ -113,23 +124,24 @@ public class Simulation {
 	{
 		 // create the window and all the contents of it
 		
-		// set up cars
-		for(int i = 0; i < myCars.size(); i++)
+		// add intersections
+		for(Intersection currInter: myIntersections)
 		{
-			// set cars to front
-			mySimPanel.setComponentZOrder(myCars.get(i), LAYER_1_INDEX);
-			//myCars.get(i).setLocation(0, 100 + (i + 1) * LANE_SPACE);
-			//mySimPanel.add(myCars.get(i)); // 
-			
-			
+			mySimPanel.add(currInter);
 		}
 		
 		// update loop to run game
 		while(myIsRunning)
 		{
+			// set intersection depth to layer 2
+			for(Intersection currInter: myIntersections)
+			{
+				mySimPanel.setComponentZOrder(currInter, LAYER_2_INDEX);
+			}
+							
+			// generate and add a new car every mySpawnInterval updates
 			if(myUpdateCounter % mySpawnInterval == 0)
 			{
-				// generate and add a new car
 				Car carToAdd;
 				int direction;
 				
@@ -158,6 +170,14 @@ public class Simulation {
 				mySimPanel.add(carToAdd);
 			}
 			
+			if(myUpdateCounter % myLightChangeWaitTime == 0)
+			{
+				for(Intersection currInter: myIntersections)
+				{
+					currInter.changeLight();
+				}
+			}
+			
 			myUpdateCounter++;
 			
 			// reset update counter if it reaches its max
@@ -166,13 +186,32 @@ public class Simulation {
 				myUpdateCounter = 0;
 			}
 
-			// update all sim objects every loop
-			for(int i = 0; i < myCars.size(); i++)
+					
+			// update all cars every loop
+			for(Car currCar: myCars)
 			{
-				myCars.get(i).update();
-				mySimPanel.setComponentZOrder(myCars.get(i), LAYER_1_INDEX); // send cars to front
+				currCar.update();
+				mySimPanel.setComponentZOrder(currCar, LAYER_1_INDEX); // send cars to front
 				
+				
+				for(Intersection currInter: myIntersections)
+				{
+					// check if Cars can see a car or intersection and need to stop 
+					if(currCar.seesSlowCar(myCars) || currCar.seesIntersection(currInter.getCollisionRectangles()))
+					{
+						currCar.setAccel(myDeccel);
+					}
+					// try accelerating
+					else
+					{
+						if(myUpdateCounter % 10 == 0)
+							currCar.setAccel(myAccel);
+					}
+				}
 			}
+			
+			// check if 
+			
 			
 			try {
 				Thread.sleep(WAIT_TIME); // wait WAIT_TIME milliseconds every update
@@ -227,6 +266,13 @@ public class Simulation {
 		mySimPanel.setComponentZOrder(roadHorizB, LAYER_3_INDEX);
 		mySimPanel.setComponentZOrder(roadVertL, LAYER_3_INDEX);
 		mySimPanel.setComponentZOrder(roadVertR, LAYER_3_INDEX);
+		
+		// set intersections
+		for(Intersection currInter: myIntersections)
+		{
+			mySimPanel.add(currInter);
+			mySimPanel.setComponentZOrder(currInter, LAYER_2_INDEX);
+		}
 		
 		// set panel for the simulation options
 		myMenuPanel = new JPanel();
@@ -284,8 +330,8 @@ public class Simulation {
 		JPanel accelPanel = new JPanel();
 		accelPanel.setLayout(new FlowLayout());
 		accelPanel.setBackground(Color.LIGHT_GRAY);
-		accelPanel.setPreferredSize(new Dimension(200, 120));
-		accelPanel.setMaximumSize(new Dimension(200, 120));
+		accelPanel.setPreferredSize(new Dimension(220, 120));
+		accelPanel.setMaximumSize(new Dimension(220, 120));
 		JLabel lblAccel = new JLabel("Acceleration of the cars in pixels per");
 		lblAccel.setBackground(Color.WHITE);
 		accelPanel.add(lblAccel);

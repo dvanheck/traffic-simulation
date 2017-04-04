@@ -128,6 +128,16 @@ public class Car extends JLabel implements Updatable {
 	}
 	
 	/**
+	 * Returns the amoount of acceleration of the car
+	 * 
+	 * @return accelAmount
+	 */
+	public int getAccel()
+	{
+		return myAccelAmount;
+	}
+	
+	/**
 	 * Sets the top speed of the car
 	 * 
 	 * @param speed
@@ -195,12 +205,17 @@ public class Car extends JLabel implements Updatable {
 	{
 		this.move();
 		
+		if(myAccelAmount < 0 && myCurrentSpeed <= 0)
+		{
+			myCurrentSpeed = 0;
+			myAccelAmount = 0;
+		}
 		// if the car sees something stopped ahead
 		
 		// slow down depending on distance
 		
 		// if the car needs to accelerate
-		if(myAccelAmount > 0)
+		if(myCurrentSpeed < myTopSpeed)
 		{
 			// check if the update loop has looped myAccelWaitTime times
 			if(myUpdateCounter != 0 && myAccelWaitTime == myUpdateCounter)
@@ -242,13 +257,18 @@ public class Car extends JLabel implements Updatable {
 		else if(myDirection == 4)
 		{
 			this.setLocation(this.getX(), this.getY() + myCurrentSpeed);
-			myLongSight.setLocation(this.getX(), this.getY() + LENGTH - myCurrentSpeed);
+			myLongSight.setLocation(this.getX(), this.getY() + LENGTH + myCurrentSpeed);
 		}
 	}
 	
 	public void accelerate()
 	{
 		// check if acceleration is valid
+		if(myAccelAmount < 0 && myCurrentSpeed <= 0)
+		{
+			myAccelAmount = 0;
+			myCurrentSpeed = 0;
+		}
 		if(myCurrentSpeed + myAccelAmount < myTopSpeed)
 		{
 			// if so, accelerate current speed 
@@ -258,22 +278,40 @@ public class Car extends JLabel implements Updatable {
 		{
 			// if not, set currentSpeed to topSpeed
 			myCurrentSpeed = myTopSpeed;
-			myAccelAmount = 0;
+			//myAccelAmount = 0;
 		}	
 	}
 		
 	/**
-	 * Checks if this Car sees any of the obstacles passed in
+	 * Checks if this Car sees any of the intersection barriers passed in
 	 * 
 	 * @param obstacles   the obstacles the car checks if it can see
 	 * @return
 	 */
-	public boolean seesObstacle(ArrayList<Rectangle> obstacles)
+	public boolean seesIntersection(ArrayList<Rectangle> obstacles)
 	{
 		for(int i = 0; i < obstacles.size(); i++)
 		{
 			if(!this.equals(obstacles.get(i)))
 				if(myLongSight.intersects(obstacles.get(i)))
+					return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Checks if this Car sees another Car that is stopped or has negative acceleration
+	 * 
+	 * @param cars   the cars the car checks if it can see and are stopped
+	 * @return
+	 */
+	public boolean seesSlowCar(ArrayList<Car> cars)
+	{
+		for(Car currCar: cars)
+		{
+			if(!this.equals(currCar))
+				// if it sees the car and the other car is either slowing down or is stopped
+				if(myLongSight.intersects(currCar.getBounds()) && (currCar.getAccel() < 0 || currCar.getSpeed() == 0))
 					return true;
 		}
 		return false;
