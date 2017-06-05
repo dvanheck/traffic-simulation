@@ -28,7 +28,7 @@ public class Intersection extends JLabel {
 	private ImageIcon greenIcon;
 	
 	/** 
-	 * dont use pls
+	 * Default constructor for Intersection(don't use)
 	 */
 	public Intersection()
 	{
@@ -44,7 +44,7 @@ public class Intersection extends JLabel {
 		setBounds(x, y, 5 * Simulation.LANE_WIDTH, 5 * Simulation.LANE_WIDTH);
 		
 		topRect = new Rectangle(x, y, RECT_LENGTH, RECT_HEIGHT);
-		leftRect = new Rectangle(x, y + 3 * Simulation.LANE_WIDTH, RECT_HEIGHT, RECT_LENGTH);
+		leftRect = new Rectangle(x - 3, y + 3 * Simulation.LANE_WIDTH, RECT_HEIGHT, RECT_LENGTH);
 		botRect = new Rectangle(x + 3 * Simulation.LANE_WIDTH, y + 5 * Simulation.LANE_WIDTH, RECT_LENGTH, RECT_HEIGHT);
 		rightRect = new Rectangle(x + 5 * Simulation.LANE_WIDTH, y, RECT_HEIGHT, RECT_LENGTH);
 	}
@@ -70,7 +70,7 @@ public class Intersection extends JLabel {
 		setBounds(x, y, 5 * Simulation.LANE_WIDTH, 5 * Simulation.LANE_WIDTH);
 		
 		topRect = new Rectangle(x, y, RECT_LENGTH, RECT_HEIGHT);
-		leftRect = new Rectangle(x, y + 3 * Simulation.LANE_WIDTH, RECT_HEIGHT, RECT_LENGTH);
+		leftRect = new Rectangle(x - 3, y + 3 * Simulation.LANE_WIDTH, RECT_HEIGHT, RECT_LENGTH);
 		botRect = new Rectangle(x + 3 * Simulation.LANE_WIDTH, y + 5 * Simulation.LANE_WIDTH, RECT_LENGTH, RECT_HEIGHT);
 		rightRect = new Rectangle(x + 5 * Simulation.LANE_WIDTH, y, RECT_HEIGHT, RECT_LENGTH);
 		
